@@ -4,7 +4,7 @@ resources:
     configuration:
       gitProvider: manishas_github
       path: devops-recipes/basic-node
-      
+
 pipelines:
   - name: basic_node_pipeline
     steps:
@@ -17,5 +17,19 @@ pipelines:
           onExecute:
             - cd $res_basic_node_repo_resourcePath
             - npm install
+            - $res_basic_node_repo_resourcePath/node_modules/.bin/mocha --recursive "tests/**/*.spec.js" -R mocha-junit-reporter --reporter-options mochaFile=testresults.xml
+            - save_tests testresults.xml
+
+  - name: basic_node_NpmBuild
+    steps:
+      - name: build
+        type: NpmBuild
+        configuration:
+          integrations:
+            - name: artifactory_int
+          inputResources:
+            - name: basic_node_repo
+        execution:
+          onSuccess:
             - $res_basic_node_repo_resourcePath/node_modules/.bin/mocha --recursive "tests/**/*.spec.js" -R mocha-junit-reporter --reporter-options mochaFile=testresults.xml
             - save_tests testresults.xml
